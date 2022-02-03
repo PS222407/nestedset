@@ -7,17 +7,17 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function getTree($data): string
+    public function getTree($data, $url): string
     {
         $tree = '<ul>';
 
         foreach ($data as $node) {
             $tree .= '<li>' . $node['name'];
-            $tree .= '<a style="padding: 10px;" href="/categories/move-down/' . $node->id . '">&dArr;</a>';
-            $tree .= '<a style="padding: 10px;" href="/categories/move-up/' . $node->id . '">&uArr;</a>';
-            $tree .= '<a style="padding: 10px;" href="/categories/edit/' . $node->id . '">Edit</a>';
-            $tree .= '<a style="padding: 10px;" href="/categories/delete/' . $node->id . '">Delete</a>';
-            $tree .= $this->getTree($node->children);
+            $tree .= '<a style="padding: 10px;" href="/'.$url.'/move-down/' . $node->id . '">&dArr;</a>';
+            $tree .= '<a style="padding: 10px;" href="/'.$url.'/move-up/' . $node->id . '">&uArr;</a>';
+            $tree .= '<a style="padding: 10px;" href="/'.$url.'/edit/' . $node->id . '">Edit</a>';
+            $tree .= '<a style="padding: 10px;" href="/'.$url.'/delete/' . $node->id . '">Delete</a>';
+            $tree .= $this->getTree($node->children, $url);
             $tree .= '</li>';
         }
         $tree .= '</ul>';
@@ -45,8 +45,7 @@ class CategoryController extends Controller
     public function nodeUp($id)
     {
         $node = Category::find($id);
-
-        $bool = $node->up();
+        $node->up();
 
         return redirect()->route('categories_index');
     }
@@ -54,18 +53,16 @@ class CategoryController extends Controller
     public function nodeDown($id)
     {
         $node = Category::find($id);
-
-        $bool = $node->down();
+        $node->down();
 
         return redirect()->route('categories_index');
     }
-
 
     public function index()
     {
         $categories = Category::defaultOrder()->get()->toTree();
 
-        $htmltree = $this->getTree($categories);
+        $htmltree = $this->getTree($categories, 'categories');
 
         return view('categories_index', ['htmltree' => $htmltree]);
     }
@@ -108,7 +105,12 @@ class CategoryController extends Controller
 
         $node = Category::find($id);
         $node->name = $request->name;
-        $node->parent_id = $request->parent;
+        if ($request->parent != 'null') {
+            $node->parent_id = $request->parent;
+        } else {
+            $node->parent_id = null;
+        }
+
         $node->save();
 
         return redirect()->route('categories_index');
