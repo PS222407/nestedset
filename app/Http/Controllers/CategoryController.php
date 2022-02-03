@@ -22,7 +22,6 @@ class CategoryController extends Controller
         }
         $tree .= '</ul>';
 
-
         return $tree;
     }
 
@@ -107,8 +106,9 @@ class CategoryController extends Controller
             'name' => 'required',
         ]);
 
-        $node = Category::find($id); //
+        $node = Category::find($id);
         $node->name = $request->name;
+        $node->parent_id = $request->parent;
         $node->save();
 
         return redirect()->route('categories_index');
