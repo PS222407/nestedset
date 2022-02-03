@@ -20,6 +20,7 @@ class CategoryController extends Controller
         }
         $tree .= '</ul>';
 
+
         return $tree;
     }
 
