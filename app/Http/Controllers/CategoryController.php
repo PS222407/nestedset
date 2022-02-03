@@ -2,44 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\NestedTree;
 use App\Models\Category;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    public function getTree($data, $url): string
+    protected NestedTree $nestedTree;
+
+    public function __construct(NestedTree $nestedTree)
     {
-        $tree = '<ul>';
-
-        foreach ($data as $node) {
-            $tree .= '<li>' . $node['name'];
-            $tree .= '<a style="padding: 10px;" href="/'.$url.'/move-down/' . $node->id . '">&dArr;</a>';
-            $tree .= '<a style="padding: 10px;" href="/'.$url.'/move-up/' . $node->id . '">&uArr;</a>';
-            $tree .= '<a style="padding: 10px;" href="/'.$url.'/edit/' . $node->id . '">Edit</a>';
-            $tree .= '<a style="padding: 10px;" href="/'.$url.'/delete/' . $node->id . '">Delete</a>';
-            $tree .= $this->getTree($node->children, $url);
-            $tree .= '</li>';
-        }
-        $tree .= '</ul>';
-
-        return $tree;
-    }
-
-    public function getDropDown($data, $selectedParent = null): string
-    {
-        $tree = '';
-
-        foreach ($data as $node) {
-            $lines = str_repeat('- ', $node->depth);
-
-            if ($node->id == $selectedParent) {
-                $tree .= '<option selected="selected" value="' . $node->id . '">' . $lines . $node->name . '</option>';
-            } else {
-                $tree .= '<option value="' . $node->id . '">' . $lines . $node->name . '</option>';
-            }
-        }
-
-        return $tree;
+        $this->nestedTree = $nestedTree;
     }
 
     public function nodeUp($id)
@@ -62,7 +35,7 @@ class CategoryController extends Controller
     {
         $categories = Category::defaultOrder()->get()->toTree();
 
-        $htmltree = $this->getTree($categories, 'categories');
+        $htmltree = $this->nestedTree->getTree($categories, 'categories');
 
         return view('categories_index', ['htmltree' => $htmltree]);
     }
@@ -70,7 +43,7 @@ class CategoryController extends Controller
     public function create()
     {
         $categoriesFlat = Category::withDepth()->defaultOrder()->get()->toFlatTree();
-        $options = $this->getDropDown($categoriesFlat);
+        $options = $this->nestedTree->getDropDown($categoriesFlat);
         return view('categories_create', ['options' => $options]);
     }
 
@@ -79,7 +52,7 @@ class CategoryController extends Controller
         $node = Category::find($id);
 
         $categoriesFlat = Category::withDepth()->defaultOrder()->get()->toFlatTree();
-        $options = $this->getDropDown($categoriesFlat, $node->parent_id);
+        $options = $this->nestedTree->getDropDown($categoriesFlat, $node->parent_id);
 
         return view('categories_edit', ['options' => $options, 'node' => $node]);
     }
@@ -110,7 +83,6 @@ class CategoryController extends Controller
         } else {
             $node->parent_id = null;
         }
-
         $node->save();
 
         return redirect()->route('categories_index');
