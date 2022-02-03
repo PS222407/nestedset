@@ -15,6 +15,7 @@ class CategoryController extends Controller
             $tree .= '<li>' . $node['name'];
             $tree .= '<a style="padding: 10px;" href="/categories/move-down/' . $node->id . '">&dArr;</a>';
             $tree .= '<a style="padding: 10px;" href="/categories/move-up/' . $node->id . '">&uArr;</a>';
+            $tree .= '<a style="padding: 10px;" href="/categories/edit/' . $node->id . '">Edit</a>';
             $tree .= $this->getTree($node->children);
             $tree .= '</li>';
         }
@@ -24,14 +25,18 @@ class CategoryController extends Controller
         return $tree;
     }
 
-    public function getDropDown($data): string
+    public function getDropDown($data, $selectedParent = null): string
     {
         $tree = '';
 
         foreach ($data as $node) {
             $lines = str_repeat('- ', $node->depth);
-            $tree .= '<option value="' . $node->id . '">' . $lines . $node->name . '</option>';
 
+            if ($node->id == $selectedParent) {
+                $tree .= '<option selected="selected" value="' . $node->id . '">' . $lines . $node->name . '</option>';
+            } else {
+                $tree .= '<option value="' . $node->id . '">' . $lines . $node->name . '</option>';
+            }
         }
 
         return $tree;
@@ -72,6 +77,16 @@ class CategoryController extends Controller
         return view('categories_create', ['options' => $options]);
     }
 
+    public function edit($id)
+    {
+        $node = Category::find($id);
+
+        $categoriesFlat = Category::withDepth()->defaultOrder()->get()->toFlatTree();
+        $options = $this->getDropDown($categoriesFlat, $node->parent_id);
+
+        return view('categories_edit', ['options' => $options, 'node' => $node]);
+    }
+
     public function createAction(Request $request)
     {
         $validated = $request->validate([
@@ -81,6 +96,22 @@ class CategoryController extends Controller
         $parent = Category::find($request->parent);
 
         Category::create(['name' => $request->name], $parent);
+
+        return redirect()->route('categories_index');
+    }
+
+    public function editAction(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'name' => 'required',
+        ]);
+
+//        $parent = Category::find($request->parent);
+//        Category::create(['name' => $request->name], $parent);
+
+        $category = Category::find($id); //
+        $category->name = $request->name;
+        $category->save();
 
         return redirect()->route('categories_index');
     }
