@@ -16,6 +16,7 @@ class CategoryController extends Controller
             $tree .= '<a style="padding: 10px;" href="/categories/move-down/' . $node->id . '">&dArr;</a>';
             $tree .= '<a style="padding: 10px;" href="/categories/move-up/' . $node->id . '">&uArr;</a>';
             $tree .= '<a style="padding: 10px;" href="/categories/edit/' . $node->id . '">Edit</a>';
+            $tree .= '<a style="padding: 10px;" href="/categories/delete/' . $node->id . '">Delete</a>';
             $tree .= $this->getTree($node->children);
             $tree .= '</li>';
         }
@@ -106,12 +107,17 @@ class CategoryController extends Controller
             'name' => 'required',
         ]);
 
-//        $parent = Category::find($request->parent);
-//        Category::create(['name' => $request->name], $parent);
+        $node = Category::find($id); //
+        $node->name = $request->name;
+        $node->save();
 
-        $category = Category::find($id); //
-        $category->name = $request->name;
-        $category->save();
+        return redirect()->route('categories_index');
+    }
+
+    public function delete($id)
+    {
+        $node = Category::find($id); //
+        $node->delete();
 
         return redirect()->route('categories_index');
     }

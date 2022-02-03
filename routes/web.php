@@ -24,6 +24,7 @@ Route::get('/categories/create', [\App\Http\Controllers\CategoryController::clas
 Route::post('/categories', [\App\Http\Controllers\CategoryController::class, 'createAction']);
 Route::get('/categories/edit/{id}', [\App\Http\Controllers\CategoryController::class, 'edit'])->name('categories_edit');
 Route::put('/categories/{id}', [\App\Http\Controllers\CategoryController::class, 'editAction']);
+Route::get('/categories/delete/{id}', [\App\Http\Controllers\CategoryController::class, 'delete']);
 
 Route::get('/categories/move-up/{id}', [\App\Http\Controllers\CategoryController::class, 'nodeUp']);
 Route::get('/categories/move-down/{id}', [\App\Http\Controllers\CategoryController::class, 'nodeDown']);
