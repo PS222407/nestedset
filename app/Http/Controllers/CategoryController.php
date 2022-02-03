@@ -13,6 +13,8 @@ class CategoryController extends Controller
 
         foreach ($data as $node) {
             $tree .= '<li>' . $node['name'];
+            $tree .= '<a style="padding: 10px;" href="/categories/move-down/' . $node->id . '">&dArr;</a>';
+            $tree .= '<a style="padding: 10px;" href="/categories/move-up/' . $node->id . '">&uArr;</a>';
             $tree .= $this->getTree($node->children);
             $tree .= '</li>';
         }
@@ -34,18 +36,18 @@ class CategoryController extends Controller
         return $tree;
     }
 
-    public function nodeUp()
+    public function nodeUp($id)
     {
-        $node = Category::find(22);
+        $node = Category::find($id);
 
         $bool = $node->up();
 
         return redirect()->route('categories_index');
     }
 
-    public function nodeDown()
+    public function nodeDown($id)
     {
-        $node = Category::find(22);
+        $node = Category::find($id);
 
         $bool = $node->down();
 
@@ -71,7 +73,7 @@ class CategoryController extends Controller
 
     public function createAction(Request $request)
     {
-        $validated  = $request->validate([
+        $validated = $request->validate([
             'name' => 'required',
         ]);
 
