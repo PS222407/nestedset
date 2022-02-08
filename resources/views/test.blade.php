@@ -8,12 +8,16 @@
     @livewireStyles
 </head>
 <body>
+
 <livewire:counter/>
 
 <div style="text-align: center">
     <button onclick="increment()">js</button>
     <h1 id="counter">0</h1>
 </div>
+
+
+<livewire:search-customer/>
 
 
 <script>

@@ -18,8 +18,8 @@ class ProductController extends Controller
 
 
 //    API
-    public function products(){
+    public function products()
+    {
         return Product::all();
     }
-
 }
